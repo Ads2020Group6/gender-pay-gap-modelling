@@ -154,7 +154,7 @@ def main():
     df = sic_as_num(df)
     df.drop('SicCodes', axis=1, inplace=True)
 
-    df.to_csv('data/ukgov-gpg-all-cleaned.csv', index=False)
+    df.to_csv('data/ukgov-gpg-all-cleaned.csv', index=False )
 
 
 if __name__ == "__main__":
