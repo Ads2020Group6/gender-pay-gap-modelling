@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import re
+from sector_exploder import explode_sectors
 
 def drop_dupes(df):
     df.drop_duplicates(inplace=True)
@@ -68,15 +69,15 @@ def clean_data(df, save_file=False, output_filename='ukgov-gpg-full-clean.csv'):
     df = drop_unused_cols(df)
     df = drop_where_numerical_feature_is_na(df)
     df = impute_missing_mean_and_median_vals(df)
+    df = explode_sectors(df)
     if save_file: df.to_csv(output_filename, index=False)
     return df
 
 def main():
     # TODO: Argparser , input_filename, save_file, output_filename
-    input_filename = "data/ukgov-gpg-2017.csv"
-    output_filename = "data/ukgov-gpg-2017-clean.csv"
+    input_filename = "data/ukgov-gpg-full.csv"
     df = pd.read_csv(input_filename)
-    clean_data(df, save_file=True, output_filename=output_filename)
+    clean_data(df, save_file=True)
 
 if __name__ == "__main__":
     main()

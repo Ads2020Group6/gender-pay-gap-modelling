@@ -61,7 +61,7 @@ def acquire_data(save_file=False, output_filename='data/ukgov-gpg-full.csv'):
     df_2019 = pd.read_csv('data/ukgov-gpg-2019.csv', dtype={'SicCodes': str})
     df_full = merge_years(df_2017, df_2018, df_2019)
     if save_file: df_full.to_csv(output_filename, index=False)
-    return 
+    return df_full
 
 def main():
     parser = argparse.ArgumentParser(description='Download the UK Gender Pay Gap data and associated data files')
