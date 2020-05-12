@@ -1,81 +1,53 @@
 import pandas as pd
-from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor
-
+from joblib import dump, load
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+from sklearn.model_selection import KFold, train_test_split
+from pathlib import Path
+from models import models
 
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.ensemble import AdaBoostRegressor
-from sklearn.model_selection import KFold
-from xgboost import XGBRegressor
+features = ['MaleBonusPercent', 'FemaleBonusPercent',
+            'MaleLowerQuartile', 'FemaleLowerQuartile',
+            'MaleLowerMiddleQuartile', 'FemaleLowerMiddleQuartile',
+            'MaleUpperMiddleQuartile', 'FemaleUpperMiddleQuartile',
+            'MaleTopQuartile', 'FemaleTopQuartile',
+            'BonusGenderSkew', 'WorkforceGenderSkew',
+            'RepresentationInLowerMiddleQuartileSkew',
+            'RepresentationInUpperMiddleQuartileSkew',
+            'RepresentationInLowerQuartileSkew',
+            'RepresentationInTopQuartileSkew',
+            'PercMaleWorkforceInTopQuartile', 'PercMaleWorkforceInUpperMiddleQuartile',
+            'PercMaleWorkforceInLowerMiddleQuartile', 'PercMaleWorkforceInLowerQuartile',
+            'PercFemaleWorkforceInTopQuartile', 'PercFemaleWorkforceInUpperMiddleQuartile',
+            'PercFemaleWorkforceInLowerMiddleQuartile', 'PercFemaleWorkforceInLowerQuartile',
+            'year', 'EmployerSizeAsNum', 'EmpSize1k', 'EmpSize20k', 'EmpSize250', 'EmpSize500',
+            'EmpSize5k', 'EmpSizeLt250', 'SectorAgriculture', 'SectorMining',
+            'SectorConstruction', 'SectorManufacturing', 'SectorUtilityServices',
+            'SectorWholesaleTrade', 'SectorRetailTrade', 'SectorFinancials',
+            'SectorServices', 'SectorPublicAdministration', 'SectorNonclassifiable',
+            'FirstSicCodeAsNum'
+            ]
 
 
-def kfold_eval_all_models():
-    features = ['MaleBonusPercent', 'FemaleBonusPercent',
-                'MaleLowerQuartile', 'FemaleLowerQuartile',
-                'MaleLowerMiddleQuartile', 'FemaleLowerMiddleQuartile',
-                'MaleUpperMiddleQuartile', 'FemaleUpperMiddleQuartile',
-                'MaleTopQuartile', 'FemaleTopQuartile',
-                'BonusGenderSkew', 'WorkforceGenderSkew',
-                'RepresentationInLowerMiddleQuartileSkew',
-                'RepresentationInUpperMiddleQuartileSkew',
-                'RepresentationInLowerQuartileSkew',
-                'RepresentationInTopQuartileSkew',
-                'PercMaleWorkforceInTopQuartile', 'PercMaleWorkforceInUpperMiddleQuartile',
-                'PercMaleWorkforceInLowerMiddleQuartile', 'PercMaleWorkforceInLowerQuartile',
-                'PercFemaleWorkforceInTopQuartile', 'PercFemaleWorkforceInUpperMiddleQuartile',
-                'PercFemaleWorkforceInLowerMiddleQuartile', 'PercFemaleWorkforceInLowerQuartile',
-                'year', 'EmployerSizeAsNum', 'EmpSize1k', 'EmpSize20k', 'EmpSize250', 'EmpSize500',
-                'EmpSize5k', 'EmpSizeLt250', 'SectorAgriculture', 'SectorMining',
-                'SectorConstruction', 'SectorManufacturing', 'SectorUtilityServices',
-                'SectorWholesaleTrade', 'SectorRetailTrade', 'SectorFinancials',
-                'SectorServices', 'SectorPublicAdministration', 'SectorNonclassifiable',
-                'FirstSicCodeAsNum'
-                ]
+def split_holdout_companies(df):
+    # We want to withhold some companies (all years!) from the data entirely, to use
+    # for cross validation
+    companies = df['CompanyNumber'].unique()
+    test_train, validate = train_test_split(companies, test_size=0.1, shuffle=True)
+    df['holdout'] = df['CompanyNumber'].isin(validate)
 
-    df = pd.read_csv('data/ukgov-gpg-all-clean-with-features.csv')
-    df = df.dropna(axis=0, subset=features)  # droping missing values everywhere
+    X_val = df[df['holdout']][features]
+    y_val = df[df['holdout']][['DiffMeanHourlyPercent', 'DiffMedianHourlyPercent']]
+    X = df[~df['holdout']][features]
+    y = df[~df['holdout']][['DiffMeanHourlyPercent', 'DiffMedianHourlyPercent']]
 
-    X = df[features]
+    return X, y, X_val, y_val
+
+
+def kfold_eval_all_models(X, targets):
     kf = KFold(n_splits=3, random_state=42, shuffle=True)
 
-    models = dict(
-        linear_reg=LinearRegression(normalize=True),
-        decision_tree=DecisionTreeRegressor(random_state=1, max_depth=10, min_samples_split=10),
-        adaboost=AdaBoostRegressor(random_state=1),
-        gradboost=GradientBoostingRegressor(random_state=1),
-        random_forest=RandomForestRegressor(random_state=1),
-        extra_trees=ExtraTreesRegressor(bootstrap=False,
-                                        max_features=0.7500000000000001,
-                                        min_samples_leaf=1,
-                                        min_samples_split=2,
-                                        n_estimators=100),
-        extra_trees2=ExtraTreesRegressor(bootstrap=True, max_features=0.6000000000000001,
-                                         min_samples_leaf=1,
-                                         min_samples_split=9,
-                                         n_estimators=100),
-        xgboost=XGBRegressor(max_depth=9,
-                             learning_rate=0.013,
-                             n_estimators=2000,
-                             silent=True,
-                             nthread=-1,
-                             gamma=0,
-                             min_child_weight=1,
-                             max_delta_step=0,
-                             subsample=0.75,
-                             colsample_bytree=0.85,
-                             colsample_bylevel=1,
-                             reg_alpha=0,
-                             reg_lambda=1,
-                             scale_pos_weight=1,
-                             seed=1440,
-                             missing=None)
-    )
-
     for target in ['DiffMeanHourlyPercent', 'DiffMedianHourlyPercent']:
-        y = df[target]
+        y = targets[target]
         fold_idx = 0
         for train_index, test_index in kf.split(X):
             X_train, X_test = X.iloc[train_index], X.iloc[test_index]
@@ -91,7 +63,39 @@ def kfold_eval_all_models():
             fold_idx += 1
 
 
+def train_and_pickle_best_model(bestModelName, target, X, y):
+    print('Retraining {} for {} on full (non-holdout) set'.format(bestModelName, target))
+    model = models[bestModelName]
+    model.fit(X, y)
+    dump(model, 'models/{}-best-model.joblib'.format(target))
+
+
+def evaluate_best_model_on_holdout(target, X_val, y_val):
+    print("---")
+    print("Evaluating model for {} on holdout data".format(target))
+    print("---")
+    model = load('models/{}-best-model.joblib'.format(target))
+    y_pred = model.predict(X_val)
+    r2 = r2_score(y_val, y_pred)
+    mae = mean_absolute_error(y_val, y_pred)
+    mse = mean_squared_error(y_val, y_pred)
+    print("R^2:   {:.2}".format(r2))
+    print("MAE:   {:.2}".format(mae))
+    print("MSE:   {:.2}".format(mse))
+
+
 def main():
+    df = pd.read_csv('data/ukgov-gpg-all-clean-with-features.csv')
+    df = df.dropna(axis=0, subset=features)  # droping missing values everywhere
+
+    print('Splitting of 10% of companies (all years) as holdout data')
+    X, y, X_val, y_val = split_holdout_companies(df)
+    holdout = X_val.merge(y_val, left_index=True, right_index=True)
+    holdout.to_csv('data/holdout_data.csv')
+    print('Holdout data written to data/holdout.csv')
+
+    print('Evaluating all models in 3-fold validation of test_train data')
+    print('Warning: this takes a long time!')
     df = pd.DataFrame(columns=('prediction', 'kFoldIndex', 'modelName', 'r2', 'MeanAveErr', 'MeanSqErr'))
     for target, fold_idx, name, r2, mae, mse in kfold_eval_all_models():
         result = dict(prediction=target,
@@ -105,6 +109,25 @@ def main():
                        ignore_index=True)
     df.to_csv('data/model_run_results.csv', index=False)
 
+    # df = pd.read_csv('data/model_run_results.csv')
+    grouped = df.groupby(['modelName', 'prediction']).mean().reset_index()
+    best_model_mean = grouped[grouped['prediction'] == 'DiffMeanHourlyPercent'].loc[
+        grouped[grouped['prediction'] == 'DiffMeanHourlyPercent']['r2'].idxmax()]
+    best_model_median = grouped[grouped['prediction'] == 'DiffMedianHourlyPercent'].loc[
+        grouped[grouped['prediction'] == 'DiffMedianHourlyPercent']['r2'].idxmax()]
+    print(best_model_mean[['modelName', 'r2', 'MeanAveErr', 'MeanSqErr']])
+    print(best_model_median[['modelName', 'r2', 'MeanAveErr', 'MeanSqErr']])
+
+    # Now that we know the best for Mean and Median, train
+    # on the whole dataset (without holdout validation) and pickle models
+    Path('models').mkdir(parents=True, exist_ok=True)
+    train_and_pickle_best_model(best_model_mean['modelName'], best_model_mean['prediction'], X, y)
+    train_and_pickle_best_model(best_model_median['modelName'], best_model_median['prediction'], X, y)
+
+    evaluate_best_model_on_holdout('DiffMeanHourlyPercent', X_val, y_val)
+    evaluate_best_model_on_holdout('DiffMedianHourlyPercent', X_val, y_val)
+
 
 if __name__ == "__main__":
+    print('Warning! This takes a long time...')
     main()
