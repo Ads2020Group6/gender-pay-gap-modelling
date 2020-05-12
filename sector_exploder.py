@@ -13,19 +13,19 @@ import pandas as pd
 
 # def hot_enc_toplevel_sic_sector(df):
 #     # See https://en.wikipedia.org/wiki/Standard_Industrial_Classification
-#     mappings = {
-#         'Agriculture': ('01', '09'),
-#         'Mining': ('10', '14'),
-#         'Construction': ('15', '17'),
-#         'Manufacturing': ('20', '39'),
-#         'UtilityServices': ('40', '49'),
-#         'WholesaleTrade': ('50', '51'),
-#         'RetailTrade': ('52', '59'),
-#         'Financials': ('60', '69'),
-#         'Services': ('70', '90'),
-#         'PublicAdministration': ('91', '97'),
-#         'Nonclassifiable': ('98', '99')
-#     }
+    # mappings = {
+    #     'Agriculture': ('01', '09'),
+    #     'Mining': ('10', '14'),
+    #     'Construction': ('15', '17'),
+    #     'Manufacturing': ('20', '39'),
+    #     'UtilityServices': ('40', '49'),
+    #     'WholesaleTrade': ('50', '51'),
+    #     'RetailTrade': ('52', '59'),
+    #     'Financials': ('60', '69'),
+    #     'Services': ('70', '90'),
+    #     'PublicAdministration': ('91', '97'),
+    #     'Nonclassifiable': ('98', '99')
+    # }
 
 #     df['CleanedUpSic'] = df.SicCodes.map(clean_sic)
 
@@ -61,23 +61,34 @@ def encode_missing_values(df):
     df.SicCodes.replace(to_replace='nan', value='2', inplace=True)
     return df
 
-def explode_sectors(df):
+def load_codes():
+    codes = pd.read_csv('data/sic_codes.csv')
+    codes.rename(columns={
+            "sic_code": "SicCodes",
+            "section": "Section",
+            "section_description": "SectionDesc"
+        }, inplace=True)
+    codes.drop(['sic_version', 'sic_description'], axis='columns', inplace=True)
+    codes = codes_to(codes, int)
+    return codes
+
+def explode_sectors(df, save_file=True, output_filename='data/ukgov-gpg-full-sectors.csv'):
     df = codes_to(df, str)
     df = parse_codes(df)
     df = df.explode('SicCodes')
     df = encode_missing_values(df)
     df = codes_to(df, int)
-    # df = drop_no_sicdata(df)
-    # df = numerical_company_size(df)
-    # df = one_hot_enc_company_size(df)
-    # df = hot_enc_toplevel_sic_sector(df)
-    # df = sic_as_num(df)
-    # df.drop('SicCodes', axis=1, inplace=True)
+    codes = load_codes()
+    df = pd.merge(df, codes, on=['SicCodes'])
+    section_dummies = pd.get_dummies(df['Section'], prefix="Sect", prefix_sep="")
+    df = pd.concat([df, section_dummies], axis = 1)
+    df.drop('SicCodes', axis=1, inplace=True)
+    if save_file: df.to_csv(output_filename, index=False)
     return df
 
-# def main():
-df = pd.read_csv('data/ukgov-gpg-full.csv')
-df = explode_sectors(df)
+def main():
+    df = pd.read_csv('data/ukgov-gpg-full.csv')
+    df = explode_sectors(df, save_file=True)
 
-# if __name__ == "__main__":
-    # main()
+if __name__ == "__main__":
+    main()
