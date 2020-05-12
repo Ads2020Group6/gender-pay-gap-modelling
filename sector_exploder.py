@@ -46,8 +46,8 @@ import pandas as pd
 #     df = df.dropna(axis=0, subset=['SicCodes'])
 #     return df
 
-def ensure_codes_string(df):
-    df.SicCodes = df.SicCodes.astype(str)
+def codes_to(df, typ):
+    df.SicCodes = df.SicCodes.astype(typ)
     return df
 
 def strip_and_split(codes):
@@ -57,10 +57,16 @@ def parse_codes(df):
     df.SicCodes = df.SicCodes.apply(strip_and_split)
     return df
 
+def encode_missing_values(df):
+    df.SicCodes.replace(to_replace='nan', value='2', inplace=True)
+    return df
+
 def explode_sectors(df):
-    df = ensure_codes_string(df)
+    df = codes_to(df, str)
     df = parse_codes(df)
-    df = df.explode('SicCodes')    
+    df = df.explode('SicCodes')
+    df = encode_missing_values(df)
+    df = codes_to(df, int)
     # df = drop_no_sicdata(df)
     # df = numerical_company_size(df)
     # df = one_hot_enc_company_size(df)
