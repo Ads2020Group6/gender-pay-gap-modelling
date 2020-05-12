@@ -1,7 +1,5 @@
 import pandas as pd
 
-
-
 def codes_to(df, typ):
     df.SicCodes = df.SicCodes.astype(typ)
     return df

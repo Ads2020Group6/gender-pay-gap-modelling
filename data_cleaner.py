@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import re
-from sector_exploder import explode_sectors
+from sic_transformer import explode_sectors
 
 def drop_dupes(df):
     df.drop_duplicates(inplace=True)
