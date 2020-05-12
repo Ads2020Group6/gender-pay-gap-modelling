@@ -41,7 +41,7 @@ def download_data():
             target_dir='data',
             filename="ukgov-gpg-{}.csv".format(year))
 
-    SIC_CODES_CSV='https://github.com/nathanpitman/sic-codes/blob/master/2007/sic_codes.csv'
+    SIC_CODES_CSV='https://raw.githubusercontent.com/nathanpitman/sic-codes/master/2007/sic_codes.csv'
     download_file_if_not_exist(
         url=SIC_CODES_CSV,
         target_dir='data',
@@ -72,7 +72,7 @@ def main():
     if args.overwrite:
         for year in (2017, 2018, 2019):
             delete_file('data', 'ukgov-gpg-{}.csv'.format(year))
-        delete_file('data', 'SIC07_CH_condensed_list_en.csv')
+        delete_file('data', 'sic_codes.csv')
     download_data()
 
 if __name__ == "__main__":
