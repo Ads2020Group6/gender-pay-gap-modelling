@@ -65,8 +65,10 @@ def acquire_data(save_file=False, output_filename='data/ukgov-gpg-full.csv'):
 
 def main():
     parser = argparse.ArgumentParser(description='Download the UK Gender Pay Gap data and associated data files')
-    parser.add_argument('--overwrite', type=bool, default=False,
-                        help='whether to overwrite existing files (default is to not download again)')
+    parser.add_argument(
+        '--overwrite', action='store_true',
+        help='whether to overwrite existing files (default is to not download again)'
+    )
     args = parser.parse_args()
 
     if args.overwrite:
