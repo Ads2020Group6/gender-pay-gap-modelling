@@ -38,7 +38,6 @@ def kfold_eval_all_models():
     df = pd.read_csv('data/ukgov-gpg-all-clean-with-features.csv')
     df = df.dropna(axis=0, subset=features)  # droping missing values everywhere
 
-
     X = df[features]
     kf = KFold(n_splits=3, random_state=42, shuffle=True)
 
@@ -87,15 +86,24 @@ def kfold_eval_all_models():
                 y_pred = model.predict(X_test)
                 r2 = r2_score(y_test, y_pred)
                 mae = mean_absolute_error(y_test, y_pred)
-                rmse = mean_squared_error(y_test, y_pred)
-                yield target, fold_idx, name, r2, mae, rmse
+                mse = mean_squared_error(y_test, y_pred)
+                yield target, fold_idx, name, r2, mae, mse
             fold_idx += 1
 
 
-
 def main():
-    for result in kfold_eval_all_models():
+    df = pd.DataFrame(columns=('prediction', 'kFoldIndex', 'modelName', 'r2', 'MeanAveErr', 'MeanSqErr'))
+    for target, fold_idx, name, r2, mae, mse in kfold_eval_all_models():
+        result = dict(prediction=target,
+                      kFoldIndex=fold_idx,
+                      modelName=name,
+                      r2=r2,
+                      MeanAveErr=mae,
+                      MeanSqErr=mse)
         print(result)
+        df = df.append(result,
+                       ignore_index=True)
+    df.to_csv('data/model_run_results.csv', index=False)
 
 
 if __name__ == "__main__":
