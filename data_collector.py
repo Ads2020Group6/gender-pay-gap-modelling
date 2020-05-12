@@ -5,6 +5,7 @@ Download data from original sources if they are not already present in the data 
 import argparse
 import os
 from pathlib import Path
+import pandas as pd
 
 import requests
 
@@ -22,7 +23,7 @@ def download_file_if_not_exist(url, target_dir='data', extension='', filename=No
     Path(target_dir).mkdir(parents=True, exist_ok=True)
     test_path = Path(os.path.join(target_dir, local_filename))
     if test_path.is_file():
-        print("{} already exists in {}".format(local_filename, target_dir))
+        print("{} already exists in '{}' folder".format(local_filename, target_dir))
         return
 
     print("Downloading {} to {}".format(local_filename, target_dir))
@@ -33,19 +34,7 @@ def download_file_if_not_exist(url, target_dir='data', extension='', filename=No
 
     return local_filename
 
-
-def main():
-    parser = argparse.ArgumentParser(description='Download the UK Gender Pay Gap data and associated data files')
-    parser.add_argument('--overwrite', type=bool, default=False,
-                        help='whether to overwrite existing files (default is to not download again)')
-
-    args = parser.parse_args()
-
-    if args.overwrite:
-        for year in (2017, 2018, 2019):
-            delete_file('data', 'ukgov-gpg-{}.csv'.format(year))
-        delete_file('data', 'SIC07_CH_condensed_list_en.csv')
-
+def download_data():
     for year in (2017, 2018, 2019):
         download_file_if_not_exist(
             url='https://gender-pay-gap.service.gov.uk/viewing/download-data/{}'.format(year),
@@ -59,6 +48,30 @@ def main():
         filename='sic_codes.csv'
     )
 
+def merge_years(df2017, df2018, df2019):
+    df2017['year'] = 2017
+    df2018['year'] = 2018
+    df2019['year'] = 2019
+    return pd.concat([df2017, df2018, df2019])
+
+def acquire_data():
+    download_data()
+    df_2017 = pd.read_csv('data/ukgov-gpg-2017.csv', dtype={'SicCodes': str})
+    df_2018 = pd.read_csv('data/ukgov-gpg-2018.csv', dtype={'SicCodes': str})
+    df_2019 = pd.read_csv('data/ukgov-gpg-2019.csv', dtype={'SicCodes': str})
+    return merge_years(df_2017, df_2018, df_2019)
+
+def main():
+    parser = argparse.ArgumentParser(description='Download the UK Gender Pay Gap data and associated data files')
+    parser.add_argument('--overwrite', type=bool, default=False,
+                        help='whether to overwrite existing files (default is to not download again)')
+    args = parser.parse_args()
+
+    if args.overwrite:
+        for year in (2017, 2018, 2019):
+            delete_file('data', 'ukgov-gpg-{}.csv'.format(year))
+        delete_file('data', 'SIC07_CH_condensed_list_en.csv')
+    download_data()
 
 if __name__ == "__main__":
     main()
