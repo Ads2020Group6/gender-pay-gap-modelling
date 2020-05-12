@@ -52,11 +52,11 @@ def main():
             target_dir='data',
             filename="ukgov-gpg-{}.csv".format(year))
 
+    SIC_CODES_CSV='https://github.com/nathanpitman/sic-codes/blob/master/2007/sic_codes.csv'
     download_file_if_not_exist(
-        url='https://assets.publishing.service.gov.uk/government/uploads/system/uploads/' +
-            'attachment_data/file/527619/SIC07_CH_condensed_list_en.csv',
+        url=SIC_CODES_CSV,
         target_dir='data',
-        filename='SIC07_CH_condensed_list_en.csv'
+        filename='sic_codes.csv'
     )
 
 

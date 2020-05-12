@@ -16,7 +16,7 @@ def main():
     data['PercMaleWorkforceInLowerMiddleQuartile'] =  data['MaleLowerMiddleQuartile'] / data['MalePercent'] * .25
     data['PercMaleWorkforceInLowerQuartile'] =  data['MaleLowerQuartile'] / data['MalePercent'] * .25
 
-    data['PercFemaleWorkforceInTopQuartile'] =  data['FemaleTopQuartile'] /data['FemalePercent']/100 * .25
+    data['PercFemaleWorkforceInTopQuartile'] =  data['FemaleTopQuartile'] /data['FemalePercent'] * .25
     data['PercFemaleWorkforceInUpperMiddleQuartile'] =  data['FemaleUpperMiddleQuartile'] / data['FemalePercent'] * .25
     data['PercFemaleWorkforceInLowerMiddleQuartile'] =  data['FemaleLowerMiddleQuartile'] / data['FemalePercent'] * .25
     data['PercFemaleWorkforceInLowerQuartile'] =  data['FemaleLowerQuartile'] / data['FemalePercent'] * .25
