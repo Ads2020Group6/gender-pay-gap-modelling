@@ -84,7 +84,7 @@ def evaluate_best_model_on_holdout(target, X_val, y_val):
     print("MSE:   {:.2}".format(mse))
 
 
-def main():
+def main(retrain=True):
     df = pd.read_csv('data/ukgov-gpg-all-clean-with-features.csv')
     df = df.dropna(axis=0, subset=features)  # droping missing values everywhere
 
@@ -94,22 +94,23 @@ def main():
     holdout.to_csv('data/holdout_data.csv')
     print('Holdout data written to data/holdout.csv')
 
-    print('Evaluating all models in 3-fold validation of test_train data')
-    print('Warning: this takes a long time!')
-    df = pd.DataFrame(columns=('prediction', 'kFoldIndex', 'modelName', 'r2', 'MeanAveErr', 'MeanSqErr'))
-    for target, fold_idx, name, r2, mae, mse in kfold_eval_all_models():
-        result = dict(prediction=target,
-                      kFoldIndex=fold_idx,
-                      modelName=name,
-                      r2=r2,
-                      MeanAveErr=mae,
-                      MeanSqErr=mse)
-        print(result)
-        df = df.append(result,
-                       ignore_index=True)
-    df.to_csv('data/model_run_results.csv', index=False)
+    if retrain:
+        print('Evaluating all models in 3-fold validation of test_train data')
+        print('Warning: this takes a long time!')
+        df = pd.DataFrame(columns=('prediction', 'kFoldIndex', 'modelName', 'r2', 'MeanAveErr', 'MeanSqErr'))
+        for target, fold_idx, name, r2, mae, mse in kfold_eval_all_models():
+            result = dict(prediction=target,
+                          kFoldIndex=fold_idx,
+                          modelName=name,
+                          r2=r2,
+                          MeanAveErr=mae,
+                          MeanSqErr=mse)
+            print(result)
+            df = df.append(result,
+                           ignore_index=True)
+        df.to_csv('data/model_run_results.csv', index=False)
 
-    # df = pd.read_csv('data/model_run_results.csv')
+    df = pd.read_csv('data/model_run_results.csv')
     grouped = df.groupby(['modelName', 'prediction']).mean().reset_index()
     best_model_mean = grouped[grouped['prediction'] == 'DiffMeanHourlyPercent'].loc[
         grouped[grouped['prediction'] == 'DiffMeanHourlyPercent']['r2'].idxmax()]
@@ -130,4 +131,4 @@ def main():
 
 if __name__ == "__main__":
     print('Warning! This takes a long time...')
-    main()
+    main(retrain=False)
