@@ -47,11 +47,11 @@ def kfold_eval_all_models(X, targets):
     kf = KFold(n_splits=3, random_state=42, shuffle=True)
 
     for target in ['DiffMeanHourlyPercent', 'DiffMedianHourlyPercent']:
-        y = targets[target]
+        y = targets
         fold_idx = 0
         for train_index, test_index in kf.split(X):
             X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+            y_train, y_test = y.iloc[train_index][target].values, y.iloc[test_index][target].values
             for name, model in models.items():
                 print(name)
                 model.fit(X_train, y_train)
@@ -84,7 +84,7 @@ def evaluate_best_model_on_holdout(target, X_val, y_val):
     print("MSE:   {:.2}".format(mse))
 
 
-def main(retrain=True):
+def main(retrain=True, pickle=True):
     df = pd.read_csv('data/ukgov-gpg-all-clean-with-features.csv')
     df = df.dropna(axis=0, subset=features)  # droping missing values everywhere
 
@@ -98,7 +98,7 @@ def main(retrain=True):
         print('Evaluating all models in 3-fold validation of test_train data')
         print('Warning: this takes a long time!')
         df = pd.DataFrame(columns=('prediction', 'kFoldIndex', 'modelName', 'r2', 'MeanAveErr', 'MeanSqErr'))
-        for target, fold_idx, name, r2, mae, mse in kfold_eval_all_models():
+        for target, fold_idx, name, r2, mae, mse in kfold_eval_all_models(X, y):
             result = dict(prediction=target,
                           kFoldIndex=fold_idx,
                           modelName=name,
@@ -119,16 +119,17 @@ def main(retrain=True):
     print(best_model_mean[['modelName', 'r2', 'MeanAveErr', 'MeanSqErr']])
     print(best_model_median[['modelName', 'r2', 'MeanAveErr', 'MeanSqErr']])
 
-    # Now that we know the best for Mean and Median, train
-    # on the whole dataset (without holdout validation) and pickle models
-    Path('models').mkdir(parents=True, exist_ok=True)
-    train_and_pickle_best_model(best_model_mean['modelName'], best_model_mean['prediction'], X, y)
-    train_and_pickle_best_model(best_model_median['modelName'], best_model_median['prediction'], X, y)
+    if pickle:
+        # Now that we know the best for Mean and Median, train
+        # on the whole dataset (without holdout validation) and pickle models
+        Path('models').mkdir(parents=True, exist_ok=True)
+        train_and_pickle_best_model(best_model_mean['modelName'], best_model_mean['prediction'], X, y['DiffMeanHourlyPercent'].values)
+        train_and_pickle_best_model(best_model_median['modelName'], best_model_median['prediction'], X, y['DiffMedianHourlyPercent'].values)
 
-    evaluate_best_model_on_holdout('DiffMeanHourlyPercent', X_val, y_val)
-    evaluate_best_model_on_holdout('DiffMedianHourlyPercent', X_val, y_val)
+    evaluate_best_model_on_holdout('DiffMeanHourlyPercent', X_val, y_val['DiffMeanHourlyPercent'])
+    evaluate_best_model_on_holdout('DiffMedianHourlyPercent', X_val, y_val['DiffMedianHourlyPercent'])
 
 
 if __name__ == "__main__":
     print('Warning! This takes a long time...')
-    main(retrain=False)
+    main(retrain=False, pickle=True)

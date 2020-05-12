@@ -11,6 +11,11 @@ pandas = "*"
 numpy = "*"
 scikit-learn = "*"
 xgboost = "*"
+matplotlib = "*"
+seaborn = "*"
+eli5 = "*"
+pdpbox = "*"
+shap = "*"
 
 [requires]
 python_version = "3.8"
