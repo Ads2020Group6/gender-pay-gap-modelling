@@ -2,11 +2,9 @@ import pandas as pd
 import numpy as np
 import re
 
-
 def drop_dupes(df):
     df.drop_duplicates(inplace=True)
     return df
-
 
 def impute_missing_mean_and_median_vals(df):
     # Mean because underlying statistic is mean
@@ -21,15 +19,6 @@ def impute_missing_mean_and_median_vals(df):
     median_hourly_percent = df['DiffMedianHourlyPercent'].mean()
     df['DiffMedianHourlyPercent'] = df['DiffMedianHourlyPercent'].fillna(median_hourly_percent)
     return df
-
-
-def merge_years(df2017, df2018, df2019):
-    df2017['year'] = 2017
-    df2018['year'] = 2018
-    df2019['year'] = 2019
-    df = pd.concat([df2017, df2018, df2019])
-    return df
-
 
 def drop_unused_cols(df):
     del_cols = ["ResponsiblePerson", "SubmittedAfterTheDeadline", "DueDate", "DateSubmitted"]
@@ -132,17 +121,7 @@ def drop_no_sicdata(df):
     df = df.dropna(axis=0, subset=['SicCodes'])
     return df
 
-
-def main():
-    # df_sic = pd.read_csv('data/SIC07_CH_condensed_list_en.csv')
-    df_2017 = pd.read_csv('data/ukgov-gpg-2017.csv', dtype={'SicCodes': str})
-    df_2018 = pd.read_csv('data/ukgov-gpg-2018.csv', dtype={'SicCodes': str})
-    df_2019 = pd.read_csv('data/ukgov-gpg-2019.csv', dtype={'SicCodes': str})
-    df = merge_years(df_2017, df_2018, df_2019)
-    del df_2017
-    del df_2018
-    del df_2019
-
+def clean_data(df, save_file=False, output_filename='ukgov-gpg-clean.csv'):
     df = drop_dupes(df)
     df = drop_unused_cols(df)
     df = impute_missing_mean_and_median_vals(df)
@@ -153,9 +132,15 @@ def main():
     df = hot_enc_toplevel_sic_sector(df)
     df = sic_as_num(df)
     df.drop('SicCodes', axis=1, inplace=True)
+    if save_file: df.to_csv(output_filename, index=False)
+    return df
 
-    df.to_csv('data/ukgov-gpg-all-cleaned.csv', index=False )
-
+def main():
+    # Argparser , input_filename, save_file, output_filename
+    input_filename = "data/ukgov-gpg-2017.csv"
+    output_filename = "data/ukgov-gpg-2017-clean.csv"
+    df = pd.read_csv(input_filename)
+    clean_data(df, save_file=True, output_filename=output_filename)
 
 if __name__ == "__main__":
     main()
