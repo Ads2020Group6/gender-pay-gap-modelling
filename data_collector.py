@@ -54,12 +54,14 @@ def merge_years(df2017, df2018, df2019):
     df2019['year'] = 2019
     return pd.concat([df2017, df2018, df2019])
 
-def acquire_data():
+def acquire_data(save_file=False, output_filename='data/ukgov-gpg-full.csv'):
     download_data()
     df_2017 = pd.read_csv('data/ukgov-gpg-2017.csv', dtype={'SicCodes': str})
     df_2018 = pd.read_csv('data/ukgov-gpg-2018.csv', dtype={'SicCodes': str})
     df_2019 = pd.read_csv('data/ukgov-gpg-2019.csv', dtype={'SicCodes': str})
-    return merge_years(df_2017, df_2018, df_2019)
+    df_full = merge_years(df_2017, df_2018, df_2019)
+    if save_file: df_full.to_csv(output_filename, index=False)
+    return 
 
 def main():
     parser = argparse.ArgumentParser(description='Download the UK Gender Pay Gap data and associated data files')
