@@ -72,26 +72,23 @@ def load_codes():
     codes = codes_to(codes, int)
     return codes
 
-def explode_sectors(df):
+def explode_sectors(df, save_file=True, output_filename='data/ukgov-gpg-full-sectors.csv'):
     df = codes_to(df, str)
     df = parse_codes(df)
     df = df.explode('SicCodes')
     df = encode_missing_values(df)
     df = codes_to(df, int)
-
-    sic_codes = load_codes()
-    print(sic_codes.head())
-    # df = drop_no_sicdata(df)
-    # df = numerical_company_size(df)
-    # df = one_hot_enc_company_size(df)
-    # df = hot_enc_toplevel_sic_sector(df)
-    # df = sic_as_num(df)
-    # df.drop('SicCodes', axis=1, inplace=True)
+    codes = load_codes()
+    df = pd.merge(df, codes, on=['SicCodes'])
+    section_dummies = pd.get_dummies(df['Section'], prefix="Sect", prefix_sep="")
+    df = pd.concat([df, section_dummies], axis = 1)
+    df.drop('SicCodes', axis=1, inplace=True)
+    if save_file: df.to_csv(output_filename, index=False)
     return df
 
-# def main():
-df = pd.read_csv('data/ukgov-gpg-full.csv')
-df = explode_sectors(df)
+def main():
+    df = pd.read_csv('data/ukgov-gpg-full.csv')
+    df = explode_sectors(df, save_file=True)
 
-# if __name__ == "__main__":
-    # main()
+if __name__ == "__main__":
+    main()
