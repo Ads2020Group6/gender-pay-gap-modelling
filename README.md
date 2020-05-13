@@ -20,7 +20,19 @@ To pull and overwrite the existing datasets.
 ```
 python data_collector.py --overwrite
 ```
-Note: this 
+
+Clean data
+```
+python data_cleaner.py
+```
+Augment features
+```
+python augment_features.py 
+```
+Train models
+```
+python modelling_pipeline.py 
+```
 
 ### The Team
 - Shivangi Das
