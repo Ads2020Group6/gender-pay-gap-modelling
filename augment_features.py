@@ -1,8 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def main():
-    data = pd.read_csv('data/ukgov-gpg-all-cleaned.csv')
+def augment(data):
     data['MalePercent'] = (data['MaleLowerQuartile'] +
                          data['MaleLowerMiddleQuartile'] + data['MaleUpperMiddleQuartile'] +
                          data['MaleTopQuartile']) *.25
@@ -27,8 +26,12 @@ def main():
     data['RepresentationInLowerQuartileSkew'] = data['PercMaleWorkforceInLowerQuartile'] - data['PercFemaleWorkforceInLowerQuartile']
 
     data['BonusGenderSkew'] = data['MaleBonusPercent'] - data['FemaleBonusPercent']
-    data.to_csv('data/ukgov-gpg-all-clean-with-features.csv', index=False)
+    return data
 
+def main():
+    df = pd.read_csv('data/ukgov-gpg-all-cleaned.csv')
+    df = augment(df)
+    df.to_csv('data/ukgov-gpg-all-clean-with-features.csv', index=False)
 
 if __name__ == "__main__":
     main()
