@@ -41,7 +41,42 @@ def impute_missing_mean_and_median_vals(df):
     return df
 
 
-def quantizise_employer_size(df):
+def quantise_perc(df, name):
+    def quant(perc):
+        if perc is None:
+            return None
+        if perc < -50:
+            return 0
+        elif perc < -25:
+            return 1
+        elif perc < -10:
+            return 2
+        elif perc < -2:
+            return 3
+        elif perc < 2:
+            return 4
+        elif perc < 10:
+            return 5
+        elif perc < 25:
+            return 6
+        elif perc < 50:
+            return 7
+        else:
+            return 8
+
+    df["Quant{}".format(name)] = df[name].map(quant)
+    return df
+
+
+def quantise_mean_diff_perc(df):
+    return quantise_perc(df, 'DiffMeanBonusPercent')
+
+
+def quantise_median_diff_perc(df):
+    return quantise_perc(df, 'DiffMedianBonusPercent')
+
+
+def quantise_employer_size(df):
     df = df.dropna(axis=0, subset=['EmployerSize'])
 
     def mid_point_employer_size(size_text):
@@ -83,6 +118,7 @@ def sic_as_num(df):
     df['FirstSicCodeAsNum'] = df.SicCodes.map(first_sic)
     return df
 
+
 def clean_data(df, industry_sections="explode", save_file=False, output_filename='ukgov-gpg-full-clean-sections.csv'):
     # Runs dataset through a series of cleaning and transormation procedures.
 
@@ -100,9 +136,11 @@ def clean_data(df, industry_sections="explode", save_file=False, output_filename
     df = drop_unused_cols(df)
     df = impute_missing_mean_and_median_vals(df)
     df = drop_where_numerical_feature_is_na(df)
-    df = quantizise_employer_size(df)
+    df = quantise_employer_size(df)
     df = one_hot_enc_employer_size(df)
     df = sic_as_num(df)
+    df = quantise_mean_diff_perc(df)
+    df = quantise_median_diff_perc(df)
     if industry_sections == "explode": df = explode_sectors(df)
     if industry_sections == "split": df = split_sectors(df)
     if save_file: df.to_csv(output_filename, index=False)
