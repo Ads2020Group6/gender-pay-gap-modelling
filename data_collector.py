@@ -60,7 +60,9 @@ def acquire_data(save_file=False, output_filename='data/ukgov-gpg-full.csv'):
     df_2018 = pd.read_csv('data/ukgov-gpg-2018.csv', dtype={'SicCodes': str})
     df_2019 = pd.read_csv('data/ukgov-gpg-2019.csv', dtype={'SicCodes': str})
     df_full = merge_years(df_2017, df_2018, df_2019)
-    if save_file: df_full.to_csv(output_filename, index=False)
+    if save_file: 
+        df_full.to_csv(output_filename, index=False)
+        print('File saved to:', output_filename)
     return df_full
 
 def main():
@@ -75,7 +77,7 @@ def main():
         for year in (2017, 2018, 2019):
             delete_file('data', 'ukgov-gpg-{}.csv'.format(year))
         delete_file('data', 'sic_codes.csv')
-    download_data()
+    acquire_data(save_file=True, output_filename='data/ukgov-gpg-full.csv')
 
 if __name__ == "__main__":
     main()
