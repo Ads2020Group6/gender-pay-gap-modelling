@@ -72,6 +72,17 @@ def one_hot_enc_employer_size(df):
     return df
 
 
+def sic_as_num(df):
+    def first_sic(sics):
+        tmp = str(sics).split('\r\n')
+        tmp = [t.strip() for t in tmp]
+        tmp = [re.sub(',', '', t) for t in tmp]
+        tmp = [np.float(x) / 100 if x != 1 else -1 for x in tmp]
+        return tmp[0] if len(tmp) > 0 else -1
+
+    df['FirstSicCodeAsNum'] = df.SicCodes.map(first_sic)
+    return df
+
 def clean_data(df, industry_sections="explode", save_file=False, output_filename='ukgov-gpg-full-clean-sections.csv'):
     # Runs dataset through a series of cleaning and transormation procedures.
 
@@ -91,6 +102,7 @@ def clean_data(df, industry_sections="explode", save_file=False, output_filename
     df = drop_where_numerical_feature_is_na(df)
     df = quantizise_employer_size(df)
     df = one_hot_enc_employer_size(df)
+    df = sic_as_num(df)
     if industry_sections == "explode": df = explode_sectors(df)
     if industry_sections == "split": df = split_sectors(df)
     if save_file: df.to_csv(output_filename, index=False)

@@ -24,7 +24,8 @@ features = ['MaleBonusPercent', 'FemaleBonusPercent',
             'SectA', 'SectB', 'SectC', 'SectD', 'SectE',
             'SectF', 'SectG', 'SectH', 'SectI', 'SectJ', 'SectK',
             'SectL', 'SectM', 'SectN', 'SectO', 'SectP', 'SectQ',
-            'SectR', 'SectS', 'SectT', 'SectU'
+            'SectR', 'SectS', 'SectT', 'SectU',
+            'FirstSicCodeAsNum'
             ]
 
 
