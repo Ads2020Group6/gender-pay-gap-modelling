@@ -80,8 +80,8 @@ def clean_data(df, industry_sections="explode", save_file=False, output_filename
     df = df.copy()
     df = drop_dupes(df)
     df = drop_unused_cols(df)
-    df = drop_where_numerical_feature_is_na(df)
     df = impute_missing_mean_and_median_vals(df)
+    df = drop_where_numerical_feature_is_na(df)
     df = quantizise_employer_size(df)
     df = one_hot_enc_employer_size(df)
     if industry_sections == "explode": df = explode_sectors(df)
@@ -93,7 +93,7 @@ def main():
     # TODO: Argparser , input_filename, save_file, output_filename
     input_filename = "data/ukgov-gpg-full.csv"
     df = pd.read_csv(input_filename)
-    return clean_data(df, industry_sections="explode", save_file=True, output_filename='ukgov-gpg-full-section-exploded.csv')
+    return clean_data(df, industry_sections="split", save_file=True, output_filename='data/ukgov-gpg-full-section-split.csv')
 
 if __name__ == "__main__":
     df = main()
