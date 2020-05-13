@@ -55,7 +55,8 @@ def generate_dummies(df, sections):
         dummies.iloc[i, indices] = 1
     return dummies.add_prefix('Sect')
 
-def explode_sectors(df, save_file=False, output_filename='data/ukgov-gpg-full-sectors.csv'):
+def explode_sectors(df):
+    print("Exploding Industry Sections")
     df = codes_to(df, str)
     df = parse_codes(df)
     df = df.explode('SicCodes')
@@ -65,11 +66,11 @@ def explode_sectors(df, save_file=False, output_filename='data/ukgov-gpg-full-se
     df = pd.merge(df, codes, on=['SicCodes'])
     section_dummies = pd.get_dummies(df['Section'], prefix="Sect", prefix_sep="")
     df = pd.concat([df, section_dummies], axis = 1)
-    df.drop(['SicCodes','Section','SectionDesc'], axis=1, inplace=True)
-    if save_file: df.to_csv(output_filename, index=False)
+    df.drop(['Section','SectionDesc'], axis=1, inplace=True)
     return df
 
 def split_sectors(df):
+    print("Splitting Industry Sections")
     df = df.copy()
     df = drop_sic_codes_na(df)
     df = codes_to(df, str)
@@ -81,7 +82,7 @@ def split_sectors(df):
 
 def main():
     df = pd.read_csv('data/ukgov-gpg-full.csv')
-    # df = explode_sectors(df, save_file=True)
+    # explode_sectors(df)
     split_sectors(df)
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import re
-from sic_transformer import explode_sectors
+from sic_transformer import explode_sectors, split_sectors
 
 def drop_dupes(df):
     df.drop_duplicates(inplace=True)
@@ -65,14 +65,27 @@ def one_hot_enc_employer_size(df):
     df = df.merge(one_hot, left_index=True, right_index=True)
     return df
 
-def clean_data(df, save_file=False, output_filename='ukgov-gpg-full-clean.csv'):
+def clean_data(df, industry_sections="explode", save_file=False, output_filename='ukgov-gpg-full-clean-sections.csv'):
+    # Runs dataset through a series of cleaning and transormation procedures.
+
+    # Parameters:
+    #    industry_sections (str):
+    #       - None: does not parse SicCodes
+    #       - explode: creates new rows for companies with more than one element in SicCodes
+    #       - split: keeps one company row and distributes sections in respective columns 
+
+    # Returns:
+    #    Cleaned dataset.
+
+    df = df.copy()
     df = drop_dupes(df)
     df = drop_unused_cols(df)
     df = drop_where_numerical_feature_is_na(df)
     df = impute_missing_mean_and_median_vals(df)
     df = quantizise_employer_size(df)
     df = one_hot_enc_employer_size(df)
-    df = explode_sectors(df)
+    if industry_sections == "explode": df = explode_sectors(df)
+    if industry_sections == "split": df = split_sectors(df)
     if save_file: df.to_csv(output_filename, index=False)
     return df
 
@@ -80,7 +93,7 @@ def main():
     # TODO: Argparser , input_filename, save_file, output_filename
     input_filename = "data/ukgov-gpg-full.csv"
     df = pd.read_csv(input_filename)
-    clean_data(df, save_file=True)
+    return clean_data(df, industry_sections="explode", save_file=True, output_filename='ukgov-gpg-full-section-exploded.csv')
 
 if __name__ == "__main__":
-    main()
+    df = main()
