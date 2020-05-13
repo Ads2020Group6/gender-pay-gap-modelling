@@ -66,7 +66,7 @@ def explain_model(target_name, X, y):
     model = load('models/{}-best-model.joblib'.format(target_name))
     correlatePredictions(model, X, y, target_name)
     feature_importance(model, X, target_name)
-    plot_shap_values(model, X, target_name)
+    # plot_shap_values(model, X, target_name)
 
 def main():
     Path('viz').mkdir(parents=True, exist_ok=True)

@@ -20,11 +20,11 @@ features = ['MaleBonusPercent', 'FemaleBonusPercent',
             'PercFemaleWorkforceInTopQuartile', 'PercFemaleWorkforceInUpperMiddleQuartile',
             'PercFemaleWorkforceInLowerMiddleQuartile', 'PercFemaleWorkforceInLowerQuartile',
             'year', 'EmployerSizeAsNum', 'EmpSize1k', 'EmpSize20k', 'EmpSize250', 'EmpSize500',
-            'EmpSize5k', 'EmpSizeLt250', 'SectorAgriculture', 'SectorMining',
-            'SectorConstruction', 'SectorManufacturing', 'SectorUtilityServices',
-            'SectorWholesaleTrade', 'SectorRetailTrade', 'SectorFinancials',
-            'SectorServices', 'SectorPublicAdministration', 'SectorNonclassifiable',
-            'FirstSicCodeAsNum'
+            'EmpSize5k', 'EmpSizeLt250',
+            'SectA', 'SectB', 'SectC', 'SectD', 'SectE',
+            'SectF', 'SectG', 'SectH', 'SectI', 'SectJ', 'SectK',
+            'SectL', 'SectM', 'SectN', 'SectO', 'SectP', 'SectQ',
+            'SectR', 'SectS', 'SectT', 'SectU'
             ]
 
 
@@ -123,8 +123,10 @@ def main(retrain=True, pickle=True):
         # Now that we know the best for Mean and Median, train
         # on the whole dataset (without holdout validation) and pickle models
         Path('models').mkdir(parents=True, exist_ok=True)
-        train_and_pickle_best_model(best_model_mean['modelName'], best_model_mean['prediction'], X, y['DiffMeanHourlyPercent'].values)
-        train_and_pickle_best_model(best_model_median['modelName'], best_model_median['prediction'], X, y['DiffMedianHourlyPercent'].values)
+        train_and_pickle_best_model(best_model_mean['modelName'], best_model_mean['prediction'], X,
+                                    y['DiffMeanHourlyPercent'].values)
+        train_and_pickle_best_model(best_model_median['modelName'], best_model_median['prediction'], X,
+                                    y['DiffMedianHourlyPercent'].values)
 
     evaluate_best_model_on_holdout('DiffMeanHourlyPercent', X_val, y_val['DiffMeanHourlyPercent'])
     evaluate_best_model_on_holdout('DiffMedianHourlyPercent', X_val, y_val['DiffMedianHourlyPercent'])
@@ -132,4 +134,4 @@ def main(retrain=True, pickle=True):
 
 if __name__ == "__main__":
     print('Warning! This takes a long time...')
-    main(retrain=False, pickle=True)
+    main(retrain=True, pickle=True)

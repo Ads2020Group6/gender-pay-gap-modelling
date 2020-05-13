@@ -3,14 +3,17 @@ import numpy as np
 import re
 from sic_transformer import explode_sectors, split_sectors
 
+
 def drop_dupes(df):
     df.drop_duplicates(inplace=True)
     return df
+
 
 def drop_unused_cols(df):
     del_cols = ["ResponsiblePerson", "SubmittedAfterTheDeadline", "DueDate", "DateSubmitted"]
     df.drop(del_cols, axis=1, inplace=True)
     return df
+
 
 def drop_where_numerical_feature_is_na(df):
     features = ['DiffMedianBonusPercent', 'DiffMeanBonusPercent', 'MaleBonusPercent',
@@ -20,6 +23,7 @@ def drop_where_numerical_feature_is_na(df):
                 'MaleTopQuartile', 'FemaleTopQuartile']
     df = df.dropna(axis=0, subset=features)
     return df
+
 
 def impute_missing_mean_and_median_vals(df):
     # Mean because underlying statistic is mean
@@ -35,6 +39,7 @@ def impute_missing_mean_and_median_vals(df):
     median_hourly_percent = df['DiffMedianHourlyPercent'].mean()
     df['DiffMedianHourlyPercent'].fillna(median_hourly_percent, inplace=True)
     return df
+
 
 def quantizise_employer_size(df):
     df = df.dropna(axis=0, subset=['EmployerSize'])
@@ -53,17 +58,19 @@ def quantizise_employer_size(df):
     df.drop(df[df.EmployerSizeAsNum == -1].index, inplace=True)
     return df
 
+
 def one_hot_enc_employer_size(df):
     one_hot = pd.get_dummies(df['EmployerSize']).rename(
         columns={"Less than 250": "EmpSizeLt250",
-                "250 to 499": "EmpSize250",
-                "500 to 999": "EmpSize500",
-                "1000 to 4999": "EmpSize1k",
-                "5000 to 19,999": "EmpSize5k",
-                "20,000 or more": "EmpSize20k"})
+                 "250 to 499": "EmpSize250",
+                 "500 to 999": "EmpSize500",
+                 "1000 to 4999": "EmpSize1k",
+                 "5000 to 19,999": "EmpSize5k",
+                 "20,000 or more": "EmpSize20k"})
 
     df = df.merge(one_hot, left_index=True, right_index=True)
     return df
+
 
 def clean_data(df, industry_sections="explode", save_file=False, output_filename='ukgov-gpg-full-clean-sections.csv'):
     # Runs dataset through a series of cleaning and transormation procedures.
@@ -89,11 +96,14 @@ def clean_data(df, industry_sections="explode", save_file=False, output_filename
     if save_file: df.to_csv(output_filename, index=False)
     return df
 
+
 def main():
     # TODO: Argparser , input_filename, save_file, output_filename
     input_filename = "data/ukgov-gpg-full.csv"
     df = pd.read_csv(input_filename)
-    return clean_data(df, industry_sections="split", save_file=True, output_filename='data/ukgov-gpg-full-section-split.csv')
+    return clean_data(df, industry_sections="split", save_file=True,
+                      output_filename='data/ukgov-gpg-full-section-split.csv')
+
 
 if __name__ == "__main__":
     df = main()
