@@ -4,6 +4,7 @@ from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 from sklearn.model_selection import KFold, train_test_split
 from pathlib import Path
 from models import models
+from math import sqrt
 
 features = ['MaleBonusPercent', 'FemaleBonusPercent',
             'MaleLowerQuartile', 'FemaleLowerQuartile',
@@ -60,7 +61,7 @@ def kfold_eval_all_models(X, targets):
                 r2 = r2_score(y_test, y_pred)
                 mae = mean_absolute_error(y_test, y_pred)
                 mse = mean_squared_error(y_test, y_pred)
-                yield target, fold_idx, name, r2, mae, mse
+                yield target, fold_idx, name, r2, mae, sqrt(mse)
             fold_idx += 1
 
 
@@ -82,7 +83,7 @@ def evaluate_best_model_on_holdout(target, X_val, y_val):
     mse = mean_squared_error(y_val, y_pred)
     print("R^2:   {:.2}".format(r2))
     print("MAE:   {:.2}".format(mae))
-    print("MSE:   {:.2}".format(mse))
+    print("RMSE:   {:.2}".format(sqrt(mse)))
 
 
 def main(retrain=True, pickle=True):
@@ -98,14 +99,14 @@ def main(retrain=True, pickle=True):
     if retrain:
         print('Evaluating all models in 3-fold validation of test_train data')
         print('Warning: this takes a long time!')
-        df = pd.DataFrame(columns=('prediction', 'kFoldIndex', 'modelName', 'r2', 'MeanAveErr', 'MeanSqErr'))
-        for target, fold_idx, name, r2, mae, mse in kfold_eval_all_models(X, y):
+        df = pd.DataFrame(columns=('prediction', 'kFoldIndex', 'modelName', 'r2', 'MeanAveErr', 'RootMeanSqErr'))
+        for target, fold_idx, name, r2, mae, rmse in kfold_eval_all_models(X, y):
             result = dict(prediction=target,
                           kFoldIndex=fold_idx,
                           modelName=name,
                           r2=r2,
                           MeanAveErr=mae,
-                          MeanSqErr=mse)
+                          RootMeanSqErr=rmse)
             print(result)
             df = df.append(result,
                            ignore_index=True)
@@ -113,12 +114,13 @@ def main(retrain=True, pickle=True):
 
     df = pd.read_csv('data/model_run_results.csv')
     grouped = df.groupby(['modelName', 'prediction']).mean().reset_index()
+    grouped.to_csv('data/averaged_model_scores.csv', index=False)
     best_model_mean = grouped[grouped['prediction'] == 'DiffMeanHourlyPercent'].loc[
         grouped[grouped['prediction'] == 'DiffMeanHourlyPercent']['r2'].idxmax()]
     best_model_median = grouped[grouped['prediction'] == 'DiffMedianHourlyPercent'].loc[
         grouped[grouped['prediction'] == 'DiffMedianHourlyPercent']['r2'].idxmax()]
-    print(best_model_mean[['modelName', 'r2', 'MeanAveErr', 'MeanSqErr']])
-    print(best_model_median[['modelName', 'r2', 'MeanAveErr', 'MeanSqErr']])
+    print(best_model_mean[['modelName', 'r2', 'MeanAveErr', 'RootMeanSqErr']])
+    print(best_model_median[['modelName', 'r2', 'MeanAveErr', 'RootMeanSqErr']])
 
     if pickle:
         # Now that we know the best for Mean and Median, train
@@ -136,3 +138,5 @@ def main(retrain=True, pickle=True):
 if __name__ == "__main__":
     print('Warning! This takes a long time...')
     main(retrain=True, pickle=True)
+
+

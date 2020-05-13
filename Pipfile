@@ -16,6 +16,12 @@ seaborn = "*"
 eli5 = "*"
 pdpbox = "*"
 shap = "*"
+umap-learn = "*"
+tpot = "*"
+deap = "*"
+update-checker = "*"
+tqdm = "*"
+stopit = "*"
 
 [requires]
 python_version = "3.8"
