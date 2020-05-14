@@ -42,6 +42,9 @@ def split_holdout_companies(df):
     X = df[~df['holdout']][features]
     y = df[~df['holdout']][['DiffMeanHourlyPercent', 'DiffMedianHourlyPercent']]
 
+    #save to file for checking predictions
+    holdout = df[df['holdout']]
+    holdout.to_csv('data/complete_holdout_data.csv')
     return X, y, X_val, y_val
 
 

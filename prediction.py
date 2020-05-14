@@ -8,20 +8,21 @@ import pandas as pd
 
 def main():
     # get data
-    year = 2019
-    data_collector.download_file_if_not_exist(
-        url='https://gender-pay-gap.service.gov.uk/viewing/download-data/{}'.format(
-            year),
-        target_dir='data',
-        filename="ukgov-gpg-{}.csv".format(year))
-    df = pd.read_csv('data/ukgov-gpg-{}.csv'.format(year), dtype={'SicCodes': str})
-    # df_copy = df.copy()
-    # clean up
-    df = clean_data(df,industry_sections="split")
-    # feature engineering
-    df = augment(df)
-    df['year'] = 2019
-
+    # year = 2019
+    # data_collector.download_file_if_not_exist(
+    #     url='https://gender-pay-gap.service.gov.uk/viewing/download-data/{}'.format(
+    #         year),
+    #     target_dir='data',
+    #     filename="ukgov-gpg-{}.csv".format(year))
+    # df = pd.read_csv('data/ukgov-gpg-{}.csv'.format(year), dtype={'SicCodes': str})
+    # # df_copy = df.copy()
+    # # clean up
+    # df = clean_data(df,industry_sections="split")
+    # # feature engineering
+    # df = augment(df)
+    # df['year'] = 2019
+    year = '_holdout'
+    df = pd.read_csv('data/complete_holdout_data.csv')
     X = df[features]
     print("Getting the best models ----")
     # get model
