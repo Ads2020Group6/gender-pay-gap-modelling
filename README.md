@@ -16,7 +16,8 @@ Data Science unit at University of Bristol.
 - `augment_features`: Adds gender representation to the dataset.
 - `modelling_pipeline`: performs the training and evaluation of all tested.
 - `automl_pipeline`
-- `prediction`
+- `prediction` : Gets the predictions on holdout set and can be analysed with `check_mispredictions`
+
 The rest of the files are helpers or subcomponents.
 
 ### Run
