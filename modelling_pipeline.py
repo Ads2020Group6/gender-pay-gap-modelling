@@ -89,8 +89,7 @@ def evaluate_best_model_on_holdout(target, X_val, y_val):
     print("RMSE:   {:.2}".format(sqrt(mse)))
 
 
-def main(retrain=True, pickle=True):
-    df = pd.read_csv('data/ukgov-gpg-all-clean-with-features.csv')
+def train_models(df, retrain=True, pickle=True):
     df = df.dropna(axis=0, subset=features)  # droping missing values everywhere
 
     print('Splitting of 10% of companies (all years) as holdout data')
@@ -136,10 +135,12 @@ def main(retrain=True, pickle=True):
 
     evaluate_best_model_on_holdout('DiffMeanHourlyPercent', X_val, y_val['DiffMeanHourlyPercent'])
     evaluate_best_model_on_holdout('DiffMedianHourlyPercent', X_val, y_val['DiffMedianHourlyPercent'])
+   
 
+def main():
+    print('Warning! This takes a long time...')
+    df = pd.read_csv('data/ukgov-gpg-all-clean-with-features.csv')
+    train(df, retrain=True, pickle=True)
 
 if __name__ == "__main__":
-    print('Warning! This takes a long time...')
-    main(retrain=True, pickle=True)
-
-
+    main()

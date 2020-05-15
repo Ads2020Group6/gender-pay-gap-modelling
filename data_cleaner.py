@@ -148,7 +148,6 @@ def clean_data(df, industry_sections="explode", save_file=False, output_filename
 
 
 def main():
-    # TODO: Argparser , input_filename, save_file, output_filename
     input_filename = "data/ukgov-gpg-full.csv"
     df = pd.read_csv(input_filename)
     return clean_data(df, industry_sections="split", save_file=True,

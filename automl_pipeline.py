@@ -27,10 +27,7 @@ def train_and_pickle_best_model(target, X, y, val_X, val_y):
     return r2, mae, rmse
 
 
-def main(retrain=True, pickle=True):
-    df = pd.read_csv('data/ukgov-gpg-all-clean-with-features.csv')
-    df = df.dropna(axis=0, subset=features)  # dropping missing values everywhere
-
+def automl_run(df, retrain=True, pickle=True):
     print('Splitting of 10% of companies (all years) as holdout data')
     X, y, X_val, y_val = split_holdout_companies(df)
     holdout = X_val.merge(y_val, left_index=True, right_index=True)
@@ -52,4 +49,6 @@ def main(retrain=True, pickle=True):
 
 if __name__ == "__main__":
     print('Warning! This takes a VERY long time... (5hrs?)')
-    main()
+    df = pd.read_csv('data/ukgov-gpg-all-clean-with-features.csv')
+    df = df.dropna(axis=0, subset=features)  # dropping missing values everywhere
+    automl_run(df)
